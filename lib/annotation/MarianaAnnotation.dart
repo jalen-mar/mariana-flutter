@@ -1,9 +1,9 @@
 import 'package:meta/meta.dart';
 
 @immutable
-class AutoApplication {
+class MarianaApplication {
   final String? applicationName;
-  const AutoApplication([this.applicationName]);
+  const MarianaApplication([this.applicationName]);
 }
 
 @immutable

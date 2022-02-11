@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 
 @immutable
-class FeignAuto {
-  const FeignAuto();
+class EnableFeign {
+  const EnableFeign();
 }
 
 @immutable
