@@ -1,0 +1,18 @@
+name: mariana_flutter
+
+description: mariana:flutter
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.16.1 <3.0.0"
+
+dependencies:
+  yaml: 3.1.0
+  provider: 6.0.2
+  pull_to_refresh: 2.0.0
+  synchronized: 3.0.0
+  flutter:
+    sdk: flutter
