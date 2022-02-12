@@ -10,7 +10,7 @@ import 'package:yaml/yaml.dart';
 
 typedef InitializeCallback(Map? config);
 
-class MarianaApplication {
+class BasicApp {
   static void run(RouterResource resource, [Map<String?, InitializeCallback>? handlers, List<SingleChildWidget>? providers]) async {
     var configuration = await loadConfiguration();
     ThemeConfig? applicationConfig;
