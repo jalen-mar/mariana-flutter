@@ -17,11 +17,13 @@ class TitleView extends StatelessWidget {
   final List<dynamic>? actions;
   final bool? isGestureDetector;
   final bool? resizeToAvoidBottomPadding;
+  final Widget? rightDrawer;
+  final Key? scaffoldKey;
 
   TitleView(this.context, {this.title, this.body, this.centerTitle, this.bottom,
     this.height, this.color, this.titleColor, this.iconColor, this.elevation,
     this.hasLeftButton, this.onBackPressed, this.actions, this.isGestureDetector,
-    this.resizeToAvoidBottomPadding}): super();
+    this.resizeToAvoidBottomPadding, this.rightDrawer, this.scaffoldKey}): super();
 
   Future<bool> onBack() {
     if (onBackPressed != null) {
@@ -44,9 +46,10 @@ class TitleView extends StatelessWidget {
 
   Widget _createWidget() {
     return Scaffold(
+      key: scaffoldKey,
       resizeToAvoidBottomInset: resizeToAvoidBottomPadding??false,
       appBar: title != null ? PreferredSize(
-        preferredSize: Size.fromHeight(height??40),
+        preferredSize: Size.fromHeight(height??45),
         child: AppBar(
           backgroundColor: color ?? Theme.of(context).primaryColor,
           leading: (hasLeftButton ?? true) ? InkWell(
@@ -55,22 +58,21 @@ class TitleView extends StatelessWidget {
           ) : null,
           title: Text(title??""),
           bottom: bottom,
-          elevation: elevation ?? 3,
+          elevation: elevation ?? 2,
           iconTheme: IconThemeData(
             color: iconColor ?? titleColor ?? Colors.white,
           ),
-          textTheme: TextTheme(
-              headline6: TextStyle(
-                  color: titleColor ?? Colors.white,
-                  fontSize: 17.5,
-                  fontWeight: FontWeight.w600
-              )
+          titleTextStyle: TextStyle(
+            color: titleColor ?? Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
           actions: _createActions(context),
           centerTitle: centerTitle ?? true,
         ),
       ) : null,
       body: body,
+      endDrawer: rightDrawer,
     );
   }
 
@@ -87,6 +89,10 @@ class TitleView extends StatelessWidget {
               child: InkWell(
                 child: Container(
                   height: 45,
+                  decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(width: 1, color: Colors.grey.shade300)),
+                      shape: BoxShape.rectangle
+                  ),
                   alignment: Alignment.center,
                   child: Text(element ,style: TextStyle(color: Colors.black, fontSize: 14),),
                 ),

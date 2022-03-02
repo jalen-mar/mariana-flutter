@@ -3,26 +3,27 @@ import 'package:mariana_flutter/dialog/picker/PickerBean.dart';
 import 'package:mariana_flutter/dialog/picker/PickerSender.dart';
 
 class PickerView extends StatefulWidget {
-  static show(BuildContext context, int count, Function provider, Function callback) {
+  static show(BuildContext context, Function provider, Function callback) {
     showDialog(context: context, builder: (context) {
-      return PickerView(provider: provider, callback: (List<PickerBean> data) {
-        if (data.length >= count) {
-          callback.call(data.sublist(0, count));
-          return true;
-        } else {
-          return false;
-        }
-      },);
+      return PickerView(provider: provider, callback: callback,);
     });
   }
 
-  final List<PickerBean> selected = [];
+  static showMultiple(BuildContext context, Function provider, Function callback, bool isMultiple) {
+    showDialog(context: context, builder: (context) {
+      return PickerView(provider: provider, callback: callback, isMultiple: isMultiple);
+    });
+  }
+
+  final List<PickerBean> parentNodes = [];
+  final List<PickerBean> selectedNodes = [];
   final Map<String, List<PickerBean>> data = Map();
   final List<PickerBean> pickerData = [];
   final Function provider;
   final Function callback;
+  final bool? isMultiple;
 
-  PickerView({Key? key, required this.provider, required this.callback}) :super(key: key);
+  PickerView({Key? key, required this.provider, required this.callback, this.isMultiple}) :super(key: key);
 
   @override
   State<StatefulWidget> createState() => PickerState();
@@ -31,6 +32,7 @@ class PickerView extends StatefulWidget {
 class PickerState extends State<PickerView> with SingleTickerProviderStateMixin {
   List<Widget> _tabs = [];
   late Sender sender;
+  final ScrollController controller = ScrollController();
 
   Widget _createTab(String label, String id, bool isCurrent) {
     return InkWell(
@@ -42,10 +44,10 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
         ),),
       ),
       onTap: () {
-        for (int i = 0; i < widget.selected.length; i++) {
-          if (widget.selected[i].id == id) {
+        for (int i = 0; i < widget.parentNodes.length; i++) {
+          if (widget.parentNodes[i].id == id) {
             setState(() {
-              widget.selected.removeRange(i, widget.selected.length);
+              widget.parentNodes.removeRange(i, widget.parentNodes.length);
               loadData();
             });
             break;
@@ -66,19 +68,22 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
     _tabs.clear();
     widget.pickerData.clear();
     List<PickerBean>? beanItem;
-    if (widget.selected.isNotEmpty) {
-      widget.selected.forEach((item) {
+    if (widget.parentNodes.isNotEmpty) {
+      widget.parentNodes.forEach((item) {
         _tabs.add(_createTab(item.name, item.id, false));
       });
-      beanItem = widget.data[widget.selected.last.id];
+      beanItem = widget.data[widget.parentNodes.last.id];
     } else {
       beanItem = widget.data[""];
     }
     _tabs.add(_createTab("请选择", "", true));
+    if (controller.hasClients) {
+      controller.jumpTo(controller.position.maxScrollExtent);
+    }
     if (beanItem != null) {
       widget.pickerData.addAll(beanItem);
     } else {
-      widget.provider.call(widget.selected.isEmpty ? PickerBean("", "", null) : widget.selected[widget.selected.length - 1], sender);
+      widget.provider.call(widget.parentNodes.isEmpty ? PickerBean("", "", null) : widget.parentNodes[widget.parentNodes.length - 1], sender);
     }
   }
 
@@ -99,16 +104,34 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
               color: Colors.white,
               child: Column(
                 children: <Widget>[
-                  SingleChildScrollView(
-                    child: Container(
-                      constraints: BoxConstraints(
-                        minWidth: MediaQuery.of(context).size.width,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: controller,
+                          child: Container(
+                            constraints: BoxConstraints(
+                              minWidth: MediaQuery.of(context).size.width,
+                            ),
+                            child: Row(
+                              children: _tabs,
+                            ),
+                          ),
+                          scrollDirection: Axis.horizontal,
+                        ),
                       ),
-                      child: Row(
-                        children: _tabs,
+                      InkWell(
+                        child: Container(
+                          padding: EdgeInsets.only(left: 12, right: 12),
+                          child: Text("确定", style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor,),),
+                        ),
+                        onTap: () {
+                          if (widget.callback.call(widget.selectedNodes)) {
+                            Navigator.pop(context);
+                          }
+                        },
                       ),
-                    ),
-                    scrollDirection: Axis.horizontal,
+                    ],
                   ),
                   Container(
                     color: Colors.grey[200],
@@ -116,24 +139,49 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
                   ),
                   Expanded(
                     child: ListView.builder(itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        child: Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                              border: Border(bottom: BorderSide(width: 1, color: Colors.grey.shade100))
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              child: Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                    border: Border(bottom: BorderSide(width: 1, color: Colors.grey.shade100))
+                                ),
+                                alignment: Alignment.centerLeft,
+                                child: Text(widget.pickerData[index].name),),
+                              onTap: () {
+                                setState(() {
+                                  widget.parentNodes.add(widget.pickerData[index]);
+                                  if (null == widget.isMultiple) {
+                                    if (widget.callback.call(widget.parentNodes)) {
+                                      Navigator.pop(context);
+                                    } else {
+                                      loadData();
+                                    }
+                                  } else {
+                                    loadData();
+                                  }
+                                });
+                              },
+                            ),
                           ),
-                          alignment: Alignment.centerLeft,
-                          child: Text(widget.pickerData[index].name),),
-                        onTap: () {
-                          setState(() {
-                            widget.selected.add(widget.pickerData[index]);
-                            if (widget.callback.call(widget.selected)) {
-                              Navigator.pop(context);
-                            } else {
-                              loadData();
-                            }
-                          });
-                        },
+                          Offstage(
+                            offstage: widget.isMultiple == null,
+                            child: Checkbox( value: widget.selectedNodes.contains(widget.pickerData[index]), onChanged: (data) {
+                              setState(() {
+                                if (data == true) {
+                                  if (widget.isMultiple != true) {
+                                    widget.selectedNodes.clear();
+                                  }
+                                  widget.selectedNodes.add(widget.pickerData[index]);
+                                } else {
+                                  widget.selectedNodes.remove(widget.pickerData[index]);
+                                }
+                              });
+                            },),
+                          ),
+                        ],
                       );
                     },
                       itemCount: widget.pickerData.length,),
