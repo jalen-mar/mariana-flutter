@@ -36,7 +36,7 @@ class TitleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (isGestureDetector??false) ? GestureDetector(
+    return (isGestureDetector??true) ? GestureDetector(
       child: _createWidget(),
       onPanDown: (DragDownDetails details){
         FocusScope.of(context).requestFocus(fn);

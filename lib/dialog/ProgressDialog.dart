@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:mariana_flutter/widget/DecorView.dart';
-import 'package:synchronized/synchronized.dart';
 
 class ProgressDialog extends StatelessWidget {
   static int marks = 0;
   static BuildContext? dialogContext;
 
   static Future<Null> show() async {
-    var lock = new Lock();
-    lock.synchronized(() async {
-      if (0 == marks++) {
-        await showDialog(context: DecorView.navigatorKey.currentContext!, builder: (ctx) {
-          dialogContext = ctx;
-          return ProgressDialog();
-        });
-      }
-    });
+    if (0 == marks++) {
+      await showDialog(context: DecorView.navigatorKey.currentContext!, builder: (ctx) {
+        dialogContext = ctx;
+        return ProgressDialog();
+      });
+    }
     return;
   }
 
   static void dismiss() {
-    var lock = new Lock();
-    lock.synchronized(() {
-      if (0 == --marks) {
-        Navigator.pop(dialogContext!);
-      }
-    });
+    if (0 == --marks && dialogContext != null) {
+      Navigator.pop(dialogContext!);
+      dialogContext = null;
+    }
   }
 
   @override

@@ -27,7 +27,8 @@ class FeignDismiss {
 
 @immutable
 class FeignCall {
-  const FeignCall();
+  final String authenticationCode;
+  const FeignCall([this.authenticationCode = "401"]);
 }
 
 @immutable

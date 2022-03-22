@@ -111,7 +111,7 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
                           controller: controller,
                           child: Container(
                             constraints: BoxConstraints(
-                              minWidth: MediaQuery.of(context).size.width,
+                              minWidth: MediaQuery.of(context).size.width - 40,
                             ),
                             child: Row(
                               children: _tabs,
@@ -157,10 +157,14 @@ class PickerState extends State<PickerView> with SingleTickerProviderStateMixin 
                                     if (widget.callback.call(widget.parentNodes)) {
                                       Navigator.pop(context);
                                     } else {
-                                      loadData();
+                                      if (widget.pickerData[index].isExpand) {
+                                        loadData();
+                                      }
                                     }
                                   } else {
-                                    loadData();
+                                    if (widget.pickerData[index].isExpand) {
+                                      loadData();
+                                    }
                                   }
                                 });
                               },
